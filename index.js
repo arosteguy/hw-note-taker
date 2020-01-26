@@ -4,10 +4,24 @@ var app = express();
 var PORT = process.env.PORT || 3000;
 var path = require("path");
 var fs = require("fs");
+const mysql = require("mysql");
+const connection = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "momofuku2020!",
+    port: 3306,
+    database: "notes_db"
+})
+connection.connect(err => {
+    if (err) throw err,
+    console.log (`Connected as id ${connection.threadId}`);
+    connection.end();
+});
 
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 var $noteTitle = $(".note-title");
 var $noteText = $(".note-textarea");
 var $saveNoteBtn = $(".save-note");
