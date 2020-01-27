@@ -1,7 +1,10 @@
 var express = require("express");
 var app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 var PORT = process.env.PORT || 3000;
+
 var path = require("path");
 var fs = require("fs");
 const mysql = require("mysql");
@@ -12,15 +15,29 @@ const connection = mysql.createConnection({
     port: 3306,
     database: "notes_db"
 })
-connection.connect(err => {
-    if (err) throw err,
-    console.log (`Connected as id ${connection.threadId}`);
-    connection.end();
+app.listen (PORT, function() {
+    console.log("App listening on PORT" + PORT);
 });
 
+connection.connect (function (err)  {
+    if (err) throw err;
+    console.log (`Connected as id ${connection.threadId}`);
+    queryAllNotes();
+    });
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+
+function queryAllNotes() {
+    connection.query("SELECT * FROM notes", function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            console.log(res[i].id + " | " + res[i].title + " | " + res[i].text);
+        }
+        connection.end();
+    });
+};
+
+require("./api-routes.js")(app);
+require("./html-routes")(app);
 
 var $noteTitle = $(".note-title");
 var $noteText = $(".note-textarea");
@@ -165,3 +182,7 @@ $noteText.on("keyup", handleRenderSaveBtn);
 
 // Gets and renders the initial list of notes
 getAndRenderNotes();
+
+app.listen (PORT, function() {
+    console.log("App listening on PORT" + PORT);
+});
