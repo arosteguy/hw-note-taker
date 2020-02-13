@@ -1,43 +1,3 @@
-var express = require("express");
-var app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-var PORT = process.env.PORT || 3000;
-
-var path = require("path");
-var fs = require("fs");
-const mysql = require("mysql");
-const connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "momofuku2020!",
-    port: 3306,
-    database: "notes_db"
-})
-app.listen (PORT, function() {
-    console.log("App listening on PORT" + PORT);
-});
-
-connection.connect (function (err)  {
-    if (err) throw err;
-    console.log (`Connected as id ${connection.threadId}`);
-    queryAllNotes();
-    });
-
-
-function queryAllNotes() {
-    connection.query("SELECT * FROM notes", function (err, res) {
-        if (err) throw err;
-        for (var i = 0; i < res.length; i++) {
-            console.log(res[i].id + " | " + res[i].title + " | " + res[i].text);
-        }
-        connection.end();
-    });
-};
-
-require("./api-routes.js")(app);
-require("./html-routes")(app);
 
 var $noteTitle = $(".note-title");
 var $noteText = $(".note-textarea");
@@ -45,10 +5,9 @@ var $saveNoteBtn = $(".save-note");
 var $newNoteBtn = $(".new-note");
 var $noteList = $(".list-container .list-group");
 
-// activeNote is used to keep track of the note in the textarea
+
 var activeNote = {};
 
-// A function for getting all notes from the db
 var getNotes = function() {
   return $.ajax({
     url: "/api/notes",
@@ -56,7 +15,6 @@ var getNotes = function() {
   });
 };
 
-// A function for saving a note to the db
 var saveNote = function(note) {
   return $.ajax({
     url: "/api/notes",
@@ -65,15 +23,14 @@ var saveNote = function(note) {
   });
 };
 
-// A function for deleting a note from the db
 var deleteNote = function(id) {
   return $.ajax({
-    url: "api/notes/" + id,
+    url: "/api/notes/" + id,
     method: "DELETE"
   });
 };
 
-// If there is an activeNote, display it, otherwise render empty inputs
+
 var renderActiveNote = function() {
   $saveNoteBtn.hide();
 
@@ -90,7 +47,7 @@ var renderActiveNote = function() {
   }
 };
 
-// Get the note data from the inputs, save it to the db and update the view
+
 var handleNoteSave = function() {
   var newNote = {
     title: $noteTitle.val(),
@@ -103,10 +60,10 @@ var handleNoteSave = function() {
   });
 };
 
-// Delete the clicked note
+
 var handleNoteDelete = function(event) {
-  // prevents the click listener for the list from being called when the button inside of it is clicked
   event.stopPropagation();
+  
 
   var note = $(this)
     .parent(".list-group-item")
@@ -122,20 +79,18 @@ var handleNoteDelete = function(event) {
   });
 };
 
-// Sets the activeNote and displays it
 var handleNoteView = function() {
   activeNote = $(this).data();
   renderActiveNote();
 };
 
-// Sets the activeNote to and empty object and allows the user to enter a new note
+
 var handleNewNoteView = function() {
   activeNote = {};
   renderActiveNote();
 };
 
-// If a note's title or text are empty, hide the save button
-// Or else show it
+
 var handleRenderSaveBtn = function() {
   if (!$noteTitle.val().trim() || !$noteText.val().trim()) {
     $saveNoteBtn.hide();
@@ -144,7 +99,7 @@ var handleRenderSaveBtn = function() {
   }
 };
 
-// Render's the list of note titles
+
 var renderNoteList = function(notes) {
   $noteList.empty();
 
@@ -166,7 +121,7 @@ var renderNoteList = function(notes) {
   $noteList.append(noteListItems);
 };
 
-// Gets notes from the db and renders them to the sidebar
+
 var getAndRenderNotes = function() {
   return getNotes().then(function(data) {
     renderNoteList(data);
@@ -180,9 +135,5 @@ $noteList.on("click", ".delete-note", handleNoteDelete);
 $noteTitle.on("keyup", handleRenderSaveBtn);
 $noteText.on("keyup", handleRenderSaveBtn);
 
-// Gets and renders the initial list of notes
 getAndRenderNotes();
 
-app.listen (PORT, function() {
-    console.log("App listening on PORT" + PORT);
-});
